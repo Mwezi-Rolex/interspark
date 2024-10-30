@@ -216,10 +216,13 @@ const StudentDashboard = () => {
                   </li>
                 ))}
               </ul>
-              <button className="mt-6 text-blue-600 font-medium flex items-center hover:text-blue-800 transition-colors">
+              <Link
+                to="/student-dashboard/my-applications"
+                className="mt-6 text-blue-600 font-medium flex items-center hover:text-blue-800 transition-colors"
+              >
                 View All Applications
                 <FaChevronRight className="ml-2" />
-              </button>
+              </Link>
             </motion.div>
           </>
         )}

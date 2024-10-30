@@ -16,6 +16,7 @@ import CompanySignup from './pages/CompanySignup';
 import OrganizationDashboard from './pages/OrganizationDashboard';
 import CreateJob from './pages/CreateJob';
 import AdminDashboard from './pages/AdminDashboard';
+import BecomeSponsor from './pages/BecomeSponsor';
 
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
         <Route path="/company-dashboard" element={<OrganizationDashboard />} />
         <Route path="/company-dashboard/create-job" element={<CreateJob />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/become-sponsor" element={<BecomeSponsor />} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
