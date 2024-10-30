@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const JobsContent = () => {
   const [jobs, setJobs] = useState([
@@ -38,13 +39,13 @@ const JobsContent = () => {
     <div className="container mx-auto px-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Posted Jobs</h2>
-        <button
+        <Link
+          to="/company-dashboard/create-job"
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-          onClick={handleAddJob}
         >
           <FaPlus className="mr-2" />
           Add New Job
-        </button>
+        </Link>
       </div>
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">

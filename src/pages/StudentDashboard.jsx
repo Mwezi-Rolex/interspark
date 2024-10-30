@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaSearch, FaRegBookmark, FaRegFile, FaRegBell, FaChevronRight, FaUserCircle, FaBriefcase, FaMoneyBillWave, FaSignOutAlt } from 'react-icons/fa';
 import ProfileSection from '../components/ProfileSection';
+import SponsorshipApplication from '../components/SponsorshipApplication';
 
 const StudentDashboard = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const [showSponsorshipModal, setShowSponsorshipModal] = useState(false);
 
   const recommendedInternships = [
     { id: 1, title: 'Software Engineer Intern', company: 'Safaricom', location: 'Nairobi', logo: '/images/safaricom-logo.png' },
@@ -58,6 +60,10 @@ const StudentDashboard = () => {
   const handleLogout = () => {
     // For now, just redirect to the home page
     navigate('/');
+  };
+
+  const handleSponsorshipClick = () => {
+    setShowSponsorshipModal(true);
   };
 
   return (
@@ -153,7 +159,10 @@ const StudentDashboard = () => {
                 ) : (
                   <p className="text-gray-600 mb-6">You don't have an active internship at the moment.</p>
                 )}
-                <button className="w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition duration-300 flex items-center justify-center">
+                <button
+                  onClick={handleSponsorshipClick}
+                  className="w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition duration-300 flex items-center justify-center"
+                >
                   <FaMoneyBillWave className="mr-2" />
                   Apply for Sponsorship Package
                 </button>
@@ -215,6 +224,10 @@ const StudentDashboard = () => {
           </>
         )}
       </main>
+
+      {showSponsorshipModal && (
+        <SponsorshipApplication onClose={() => setShowSponsorshipModal(false)} />
+      )}
     </div>
   );
 };

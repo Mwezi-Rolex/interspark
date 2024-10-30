@@ -14,6 +14,8 @@ import Companies from './pages/Companies';
 import Sponsors from './pages/Sponsors';
 import CompanySignup from './pages/CompanySignup';
 import OrganizationDashboard from './pages/OrganizationDashboard';
+import CreateJob from './pages/CreateJob';
+import AdminDashboard from './pages/AdminDashboard';
 
 
 function App() {
@@ -37,6 +39,8 @@ function App() {
         <Route path="/sponsors" element={<Sponsors />} />
         <Route path="/company-signup" element={<CompanySignup />} />
         <Route path="/company-dashboard" element={<OrganizationDashboard />} />
+        <Route path="/company-dashboard/create-job" element={<CreateJob />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
