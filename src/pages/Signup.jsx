@@ -110,14 +110,14 @@ const Signup = () => {
           <div className="rounded-md shadow-sm space-y-4">
             {/* First Name */}
             <div>
-              <label htmlFor="firstName" className="sr-only">First Name</label>
+              <label htmlFor="firstName" className="sr-only">First Name<span className="text-red-500 ml-1">*</span></label>
               <input
                 id="firstName"
                 name="firstName"
                 type="text"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="First Name"
+                placeholder="First Name*"
                 value={formData.firstName}
                 onChange={handleChange}
               />
@@ -132,7 +132,7 @@ const Signup = () => {
                 type="text"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Last Name"
+                placeholder="Last Name*"
                 value={formData.lastName}
                 onChange={handleChange}
               />
@@ -148,7 +148,7 @@ const Signup = () => {
                 autoComplete="email"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Email address*"
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -163,7 +163,7 @@ const Signup = () => {
                 type="tel"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Phone Number (+254...)"
+                placeholder="Phone Number* (+254...)"
                 value={formData.phoneNumber}
                 onChange={handleChange}
               />
@@ -178,7 +178,7 @@ const Signup = () => {
                 type="text"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="University"
+                placeholder="University*"
                 value={formData.university}
                 onChange={handleChange}
               />
@@ -193,7 +193,7 @@ const Signup = () => {
                 type="text"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Course"
+                placeholder="Course*"
                 value={formData.course}
                 onChange={handleChange}
               />
@@ -210,7 +210,7 @@ const Signup = () => {
                 value={formData.yearOfStudy}
                 onChange={handleChange}
               >
-                <option value="">Select Year of Study</option>
+                <option value="">Select Year of Study*</option>
                 <option value="1">1st Year</option>
                 <option value="2">2nd Year</option>
                 <option value="3">3rd Year</option>
@@ -228,7 +228,7 @@ const Signup = () => {
                 type="password"
                 required
                 className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Password*"
                 value={formData.password}
                 onChange={handleChange}
               />

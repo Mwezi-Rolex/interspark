@@ -92,7 +92,7 @@ const CompanySignup = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
-                Company Name
+                Company Name<span className="text-red-500 ml-1">*</span>
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -113,7 +113,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Company Description
+                Company Description<span className="text-red-500 ml-1">*</span>
               </label>
               <textarea
                 id="description"
@@ -129,7 +129,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
-                Industry
+                Industry<span className="text-red-500 ml-1">*</span>
               </label>
               <select
                 id="industry"
@@ -150,7 +150,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                Location
+                Location<span className="text-red-500 ml-1">*</span>
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -171,7 +171,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+                Email<span className="text-red-500 ml-1">*</span>
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -192,7 +192,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone
+                Phone<span className="text-red-500 ml-1">*</span>
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -233,7 +233,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700">
-                Contact Person
+                Contact Person<span className="text-red-500 ml-1">*</span>
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -254,7 +254,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Password<span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="password"
@@ -269,7 +269,7 @@ const CompanySignup = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+                Confirm Password<span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="password"

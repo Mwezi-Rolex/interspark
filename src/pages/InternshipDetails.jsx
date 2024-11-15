@@ -225,7 +225,7 @@ const InternshipDetails = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
             <div className="space-y-4">
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name<span className="text-red-500 ml-1">*</span></label>
                 <input
                   type="text"
                   name="fullName"
@@ -237,7 +237,7 @@ const InternshipDetails = () => {
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email<span className="text-red-500 ml-1">*</span></label>
                 <input
                   type="email"
                   name="email"
@@ -249,7 +249,7 @@ const InternshipDetails = () => {
                 />
               </div>
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone<span className="text-red-500 ml-1">*</span></label>
                 <input
                   type="tel"
                   name="phone"
@@ -269,7 +269,7 @@ const InternshipDetails = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-4">Education</h3>
             <div className="space-y-4">
               <div>
-                <label htmlFor="university" className="block text-sm font-medium text-gray-700">University</label>
+                <label htmlFor="university" className="block text-sm font-medium text-gray-700">University<span className="text-red-500 ml-1">*</span></label>
                 <input
                   type="text"
                   name="university"
@@ -281,7 +281,7 @@ const InternshipDetails = () => {
                 />
               </div>
               <div>
-                <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700">Expected Graduation Year</label>
+                <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700">Expected Graduation Year<span className="text-red-500 ml-1">*</span></label>
                 <input
                   type="number"
                   name="graduationYear"
@@ -327,7 +327,7 @@ const InternshipDetails = () => {
                 )}
               </div>
               <div>
-                <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-700">Cover Letter</label>
+                <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-700">Cover Letter<span className="text-red-500 ml-1">*</span></label>
                 <textarea
                   name="coverLetter"
                   id="coverLetter"
@@ -564,7 +564,7 @@ const InternshipDetails = () => {
                     <div className="space-y-4">
                       <div>
                         <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-700">
-                          Cover Letter <span className="text-red-500">*</span>
+                          Cover Letter <span className="text-red-500 ml-1">*</span>
                         </label>
                         <textarea
                           id="coverLetter"
@@ -580,7 +580,7 @@ const InternshipDetails = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          Attachments (Resume, etc.) - Max 5 files, 5MB each
+                          Attachments (Resume, etc.) - Max 5 files, 5MB each<span className="text-red-500 ml-1">*</span>
                         </label>
                         <input
                           type="file"
@@ -593,6 +593,7 @@ const InternshipDetails = () => {
                             file:text-sm file:font-semibold
                             file:bg-blue-50 file:text-blue-700
                             hover:file:bg-blue-100"
+                          required
                         />
                         {fileErrors.length > 0 && (
                           <div className="mt-2">

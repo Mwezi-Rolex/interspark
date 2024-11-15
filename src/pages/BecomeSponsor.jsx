@@ -125,6 +125,7 @@ const BecomeSponsor = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Make a Difference</h1>
             <p className="text-xl">Choose how you want to support aspiring interns</p>
+            
           </div>
         </div>
       </section>
@@ -228,7 +229,7 @@ const BecomeSponsor = () => {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-gray-700 mb-2">Select Payment Method</label>
+                  <label className="block text-gray-700 mb-2">Select Payment Method<span className="text-red-500 ml-1">*</span></label>
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       type="button"
@@ -257,7 +258,7 @@ const BecomeSponsor = () => {
                 {selectedPaymentMethod === 'mpesa' && (
                   <>
                     <div className="mb-6">
-                      <label className="block text-gray-700 mb-2">M-Pesa Phone Number</label>
+                      <label className="block text-gray-700 mb-2">M-Pesa Phone Number<span className="text-red-500 ml-1">*</span></label>
                       <input
                         type="tel"
                         required

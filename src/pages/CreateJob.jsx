@@ -157,7 +157,7 @@ const CreateJob = () => {
           {/* Basic Information */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <label className="block text-sm font-medium text-gray-700">Title<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
                 name="title"
@@ -169,7 +169,7 @@ const CreateJob = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-sm font-medium text-gray-700">Category<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
                 name="category"
@@ -184,7 +184,7 @@ const CreateJob = () => {
           {/* Dates */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Application Deadline</label>
+              <label className="block text-sm font-medium text-gray-700">Application Deadline<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="date"
                 name="applicationDeadline"
@@ -195,7 +195,7 @@ const CreateJob = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700">Start Date<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="date"
                 name="startDate"
@@ -210,7 +210,7 @@ const CreateJob = () => {
           {/* Duration and Location */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Duration</label>
+              <label className="block text-sm font-medium text-gray-700">Duration<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
                 name="duration"
@@ -222,7 +222,7 @@ const CreateJob = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Location</label>
+              <label className="block text-sm font-medium text-gray-700">Location<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
                 name="location"
@@ -248,7 +248,7 @@ const CreateJob = () => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <label className="block text-sm font-medium text-gray-700">Description<span className="text-red-500 ml-1">*</span></label>
             <textarea
               name="description"
               value={jobData.description}
