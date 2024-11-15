@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUserPlus, FaHandHoldingHeart, FaChartLine, FaUsers, FaFileAlt, FaArrowLeft, FaCreditCard, FaMoneyBillWave } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import axios from '../config/axios';
+import { toast } from 'react-hot-toast';
+import PaymentStatus from '../components/PaymentStatus';
 
 const BecomeSponsor = () => {
   const navigate = useNavigate();
@@ -10,13 +13,82 @@ const BecomeSponsor = () => {
   const [donationAmount, setDonationAmount] = useState('');
   const [customAmount, setCustomAmount] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mpesa');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [statusMessage, setStatusMessage] = useState('');
 
   const predefinedAmounts = ['5000', '10000', '25000', '50000'];
 
-  const handleDonationSubmit = (e) => {
+  const handleDonationSubmit = async (e) => {
     e.preventDefault();
-    // Handle one-time donation payment processing
-    console.log('Processing donation:', donationAmount || customAmount);
+
+    const amount = donationAmount || customAmount;
+    if (!amount || !phoneNumber) {
+      toast.error('Please enter all required fields');
+      return;
+    }
+
+    if (!phoneNumber.match(/^254[0-9]{9}$/)) {
+      toast.error('Please enter a valid phone number starting with 254');
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount < 1) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    setPaymentStatus('processing');
+    setStatusMessage('Please wait while we process your payment...');
+    setIsProcessing(true);
+
+    try {
+      const response = await axios.post('/payments/donate', {
+        phoneNumber,
+        email: email || undefined,
+        amount: numAmount
+      });
+
+      if (response.data.success) {
+        setPaymentStatus('success');
+        setStatusMessage('Please check your phone for the M-Pesa prompt');
+
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setDonationAmount('');
+          setCustomAmount('');
+          setPhoneNumber('');
+          setEmail('');
+          setPaymentStatus(null);
+        }, 3000);
+      } else {
+        setPaymentStatus('error');
+        setStatusMessage(response.data.message || 'Failed to initiate payment');
+
+        // Clear error state after 3 seconds
+        setTimeout(() => {
+          setPaymentStatus(null);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentStatus('error');
+      setStatusMessage(
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to process donation. Please try again later.'
+      );
+
+      // Clear error state after 3 seconds
+      setTimeout(() => {
+        setPaymentStatus(null);
+      }, 3000);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleRegistrationSubmit = (e) => {
@@ -183,25 +255,49 @@ const BecomeSponsor = () => {
                 </div>
 
                 {selectedPaymentMethod === 'mpesa' && (
-                  <div className="mb-6">
-                    <label className="block text-gray-700 mb-2">M-Pesa Phone Number</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g., 254712345678"
-                      className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                      pattern="^254[0-9]{9}$"
-                      title="Please enter a valid Kenyan phone number starting with 254"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">Enter phone number in format: 254XXXXXXXXX</p>
-                  </div>
+                  <>
+                    <div className="mb-6">
+                      <label className="block text-gray-700 mb-2">M-Pesa Phone Number</label>
+                      <input
+                        type="tel"
+                        required
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="e.g., 254712345678"
+                        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+                        pattern="^254[0-9]{9}$"
+                        title="Please enter a valid Kenyan phone number starting with 254"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">Enter phone number in format: 254XXXXXXXXX</p>
+                    </div>
+
+                    <div className="mb-6">
+                      <label className="block text-gray-700 mb-2">Email Address (Optional)</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">For donation receipt</p>
+                    </div>
+                  </>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={isProcessing}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  {selectedPaymentMethod === 'mpesa' ? 'Pay with M-Pesa' : 'Proceed to Payment'}
+                  {isProcessing ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    selectedPaymentMethod === 'mpesa' ? 'Pay with M-Pesa' : 'Proceed to Payment'
+                  )}
                 </button>
               </form>
             </motion.div>
@@ -320,6 +416,14 @@ const BecomeSponsor = () => {
           </div>
         </div>
       </section>
+
+      {/* Add PaymentStatus component */}
+      {paymentStatus && (
+        <PaymentStatus
+          status={paymentStatus}
+          message={statusMessage}
+        />
+      )}
     </div>
   );
 };

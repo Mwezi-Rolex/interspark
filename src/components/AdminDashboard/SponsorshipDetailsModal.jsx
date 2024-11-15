@@ -1,72 +1,271 @@
 import React, { useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaDownload, FaCheck, FaBan, FaExclamationTriangle } from 'react-icons/fa';
+import { format } from 'date-fns';
 
-const SponsorshipDetailsModal = ({ sponsorship, package: sponsorshipPackage, onClose, onUpdateStatus }) => {
+const SponsorshipDetailsModal = ({ sponsorship, onClose, onUpdateStatus }) => {
   const [reviewNotes, setReviewNotes] = useState('');
-  const [newStatus, setNewStatus] = useState(sponsorship.status);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitReview = () => {
-    onUpdateStatus(sponsorship.id, newStatus, reviewNotes);
-    onClose();
+  const getDocumentTypeLabel = (type) => {
+    switch (type) {
+      case 'transcript': return 'Academic Transcript';
+      case 'recommendation': return 'Recommendation Letter';
+      case 'other': return 'Other Supporting Document';
+      default: return type;
+    }
   };
 
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal">
-      <div className="relative top-20 mx-auto p-5 border w-3/4 max-w-2xl shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Sponsorship Application Details</h3>
-          <button onClick={onClose} className="absolute top-0 right-0 mt-4 mr-4">
-            <FaTimes className="text-gray-500 hover:text-gray-700" />
+  const handleDownload = (url, filename) => {
+    const fullUrl = `${process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000'}/${url}`;
+
+    const link = document.createElement('a');
+    link.href = fullUrl;
+    link.target = '_blank';
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Add confirmation dialog component
+  const ConfirmationDialog = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="flex items-center mb-4">
+          <FaExclamationTriangle className="text-yellow-500 text-2xl mr-3" />
+          <h3 className="text-lg font-semibold">
+            Confirm {pendingAction === 'approved' ? 'Approval' : 'Rejection'}
+          </h3>
+        </div>
+
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to {pendingAction === 'approved' ? 'approve' : 'reject'} this sponsorship application?
+          This action cannot be undone.
+        </p>
+
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => setShowConfirmation(false)}
+            className="px-4 py-2 text-gray-600 hover:text-gray-700"
+            disabled={isSubmitting}
+          >
+            Cancel
           </button>
-          <div className="mt-2 px-7 py-3">
+          <button
+            onClick={async () => {
+              setIsSubmitting(true);
+              await onUpdateStatus(sponsorship._id, pendingAction, reviewNotes);
+              setIsSubmitting(false);
+              setShowConfirmation(false);
+            }}
+            className={`px-4 py-2 rounded-md flex items-center ${
+              pendingAction === 'approved'
+                ? 'bg-green-500 text-white hover:bg-green-600'
+                : 'bg-red-500 text-white hover:bg-red-600'
+            }`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Processing...
+              </>
+            ) : (
+              <>
+                {pendingAction === 'approved' ? <FaCheck className="mr-2" /> : <FaBan className="mr-2" />}
+                Confirm {pendingAction === 'approved' ? 'Approval' : 'Rejection'}
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Sponsorship Application Details
+            </h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Student Information */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Student Information</h3>
             <div className="grid grid-cols-2 gap-4">
-              <p className="text-sm text-gray-500"><strong>Student:</strong> {sponsorship.student}</p>
-              <p className="text-sm text-gray-500"><strong>Company:</strong> {sponsorship.company}</p>
-              <p className="text-sm text-gray-500"><strong>Position:</strong> {sponsorship.position}</p>
-              <p className="text-sm text-gray-500"><strong>Package:</strong> {sponsorshipPackage.name}</p>
-              <p className="text-sm text-gray-500"><strong>Amount:</strong> KES {sponsorshipPackage.amount}</p>
-              <p className="text-sm text-gray-500"><strong>Duration:</strong> {sponsorshipPackage.duration}</p>
-              <p className="text-sm text-gray-500"><strong>Status:</strong> {sponsorship.status}</p>
-              <p className="text-sm text-gray-500"><strong>Application Date:</strong> {sponsorship.applicationDate}</p>
-            </div>
-            <div className="mt-4">
-              <h4 className="text-md font-medium text-gray-900">Student Statement</h4>
-              <p className="text-sm text-gray-500 mt-1">{sponsorship.studentStatement}</p>
-            </div>
-            <div className="mt-4">
-              <h4 className="text-md font-medium text-gray-900">Company Recommendation</h4>
-              <p className="text-sm text-gray-500 mt-1">{sponsorship.companyRecommendation}</p>
-            </div>
-            <div className="mt-4">
-              <h4 className="text-md font-medium text-gray-900">Review Application</h4>
-              <textarea
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                rows="3"
-                placeholder="Enter review notes..."
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value)}
-              ></textarea>
-              <div className="mt-2">
-                <label className="block text-sm font-medium text-gray-700">Update Status</label>
-                <select
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                  <option value="More Information Needed">More Information Needed</option>
-                </select>
+              <div>
+                <p className="text-sm text-gray-600">Name</p>
+                <p className="font-medium">{`${sponsorship.student.firstName} ${sponsorship.student.lastName}`}</p>
               </div>
-              <button
-                onClick={handleSubmitReview}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
-              >
-                Submit Review
-              </button>
+              <div>
+                <p className="text-sm text-gray-600">Email</p>
+                <p className="font-medium">{sponsorship.student.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">University</p>
+                <p className="font-medium">{sponsorship.student.university}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Course</p>
+                <p className="font-medium">{sponsorship.student.course}</p>
+              </div>
             </div>
           </div>
+
+          {/* Package Details */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Package Details</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Package Name</p>
+                <p className="font-medium">{sponsorship.sponsorshipPackage.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Amount</p>
+                <p className="font-medium">{sponsorship.sponsorshipPackage.amount.toLocaleString()} KES</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Duration</p>
+                <p className="font-medium">{sponsorship.sponsorshipPackage.duration} months</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Application Details */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Application Details</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600">Reason for Applying</p>
+                <p className="mt-1">{sponsorship.reasonForApplying}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Financial Need</p>
+                <p className="mt-1">{sponsorship.financialNeed}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Career Goals</p>
+                <p className="mt-1">{sponsorship.careerGoals}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">GPA</p>
+                <p className="mt-1">{sponsorship.academicPerformance.gpa}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Achievements</p>
+                <ul className="list-disc pl-5 mt-1">
+                  {sponsorship.academicPerformance.achievements.map((achievement, index) => (
+                    <li key={index}>{achievement}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Supporting Documents */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Supporting Documents</h3>
+            <div className="space-y-3">
+              {sponsorship.supportingDocuments.map((doc) => (
+                <div key={doc._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{getDocumentTypeLabel(doc.type)}</p>
+                    <p className="text-sm text-gray-600">{doc.originalFilename}</p>
+                    <p className="text-xs text-gray-500">
+                      Uploaded on: {format(new Date(doc.uploadDate), 'MMM dd, yyyy')}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <a
+                      href={`${process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000'}/${doc.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 px-3 py-1"
+                    >
+                      View
+                    </a>
+                    <button
+                      onClick={() => handleDownload(doc.url, doc.originalFilename)}
+                      className="text-green-600 hover:text-green-800 px-3 py-1"
+                    >
+                      <FaDownload className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          {sponsorship.status === 'pending' && (
+            <>
+              {/* Review Notes Input */}
+              <div>
+                <label htmlFor="reviewNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                  Review Notes
+                </label>
+                <textarea
+                  id="reviewNotes"
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  rows="3"
+                  placeholder="Add your review notes here..."
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setPendingAction('rejected');
+                    setShowConfirmation(true);
+                  }}
+                  className="px-4 py-2 text-red-600 hover:text-red-700 flex items-center"
+                >
+                  <FaBan className="mr-2" />
+                  Reject
+                </button>
+                <button
+                  onClick={() => {
+                    setPendingAction('approved');
+                    setShowConfirmation(true);
+                  }}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center"
+                >
+                  <FaCheck className="mr-2" />
+                  Approve
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Show confirmation dialog when needed */}
+          {showConfirmation && <ConfirmationDialog />}
+
+          {/* Display Review Notes if application is not pending */}
+          {sponsorship.status !== 'pending' && sponsorship.reviewNotes && (
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Review Notes</h3>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-gray-700">{sponsorship.reviewNotes}</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Reviewed on: {format(new Date(sponsorship.reviewedAt), 'MMM dd, yyyy')}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

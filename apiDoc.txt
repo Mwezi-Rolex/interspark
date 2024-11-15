@@ -1,0 +1,277 @@
+# InterSpark API Documentation
+
+## Overview
+InterSpark is an internship platform connecting students with companies.
+
+## Base URL
+http://localhost:3000/api
+
+## Authentication
+All protected routes require a JWT token in the Authorization header:
+Authorization: Bearer <your_jwt_token>
+
+## Authentication Endpoints
+
+### Company Registration
+POST /auth/company/signup
+
+Request Body:
+{
+  "email": "company@example.com",
+  "password": "securepassword",
+  "companyName": "Tech Corp",
+  "description": "Leading tech company",
+  "industry": "Technology",
+  "location": "Nairobi",
+  "website": "https://techcorp.com"
+}
+
+Success Response (201):
+{
+  "success": true,
+  "message": "Company registered successfully",
+  "token": "jwt_token_here",
+  "company": {
+    "id": "company_id",
+    "email": "company@example.com",
+    "companyName": "Tech Corp",
+    "industry": "Technology",
+    "location": "Nairobi"
+  }
+}
+
+### Company Login
+POST /auth/company/login
+
+Request Body:
+{
+  "email": "company@example.com",
+  "password": "securepassword"
+}
+
+Success Response (200):
+{
+  "success": true,
+  "token": "jwt_token_here",
+  "company": {
+    "id": "company_id",
+    "email": "company@example.com",
+    "companyName": "Tech Corp"
+  }
+}
+
+## Company Endpoints
+
+### Create Internship
+POST /companies/internships
+
+Request Body:
+{
+  "title": "Software Developer Intern",
+  "description": "Detailed description of the role",
+  "requirements": ["JavaScript", "React"],
+  "responsibilities": ["Frontend development", "Testing"],
+  "duration": "3 months",
+  "location": "Nairobi",
+  "isRemote": false,
+  "stipend": {
+    "amount": 20000,
+    "currency": "KES",
+    "period": "monthly"
+  },
+  "positions": 2,
+  "startDate": "2024-06-01",
+  "applicationDeadline": "2024-05-01",
+  "category": "Software Development"
+}
+
+Success Response (201):
+{
+  "success": true,
+  "message": "Internship created successfully",
+  "internship": {
+    "id": "internship_id",
+    "title": "Software Developer Intern",
+    "company": "company_id",
+    ...
+  }
+}
+
+### Get Company's Internships
+GET /companies/internships?page=1&limit=10&status=open
+
+Success Response (200):
+{
+  "success": true,
+  "internships": [{
+    "id": "internship_id",
+    "title": "Software Developer Intern",
+    "applications": [{
+      "status": "pending",
+      "createdAt": "2024-03-20T..."
+    }]
+  }],
+  "pagination": {
+    "total": 50,
+    "pages": 5,
+    "page": 1,
+    "limit": 10
+  }
+}
+
+### Update Application Status
+PATCH /companies/applications/:applicationId/status
+
+Request Body:
+{
+  "status": "accepted",
+  "notes": "Great candidate!"
+}
+
+Success Response (200):
+{
+  "success": true,
+  "message": "Application status updated successfully",
+  "application": {
+    "id": "application_id",
+    "status": "accepted",
+    "notes": [{
+      "content": "Great candidate!",
+      "createdAt": "2024-03-20T..."
+    }]
+  }
+}
+
+## Student Endpoints
+
+### Update Profile
+PATCH /students/profile
+
+Request Body:
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": "+254123456789",
+  "university": "University of Nairobi",
+  "course": "Computer Science",
+  "yearOfStudy": 3,
+  "bio": "Passionate about technology",
+  "skills": ["JavaScript", "React", "Node.js"],
+  "linkedIn": "https://linkedin.com/in/johndoe",
+  "github": "https://github.com/johndoe"
+}
+
+Success Response (200):
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "student": {
+    "id": "student_id",
+    "firstName": "John",
+    "lastName": "Doe",
+    ...
+  }
+}
+
+### Apply for Internship
+POST /students/internships/:internshipId/apply
+Content-Type: multipart/form-data
+
+Request Body:
+- coverLetter: "I am writing to express my interest..."
+- attachments: [File1, File2]
+
+Success Response (201):
+{
+  "success": true,
+  "message": "Application submitted successfully",
+  "application": {
+    "id": "application_id",
+    "status": "pending",
+    "coverLetter": "I am writing to express my interest...",
+    "attachments": [{
+      "url": "uploads/cv.pdf",
+      "filename": "cv.pdf",
+      "type": "cv"
+    }]
+  }
+}
+
+### Get Applications
+GET /students/applications?page=1&limit=10
+
+Success Response (200):
+{
+  "success": true,
+  "data": [{
+    "id": "application_id",
+    "internship": {
+      "title": "Software Developer Intern",
+      "company": {
+        "companyName": "Tech Corp",
+        "location": "Nairobi"
+      }
+    },
+    "status": "pending",
+    "createdAt": "2024-03-20T..."
+  }],
+  "pagination": {
+    "total": 20,
+    "pages": 2,
+    "page": 1,
+    "limit": 10,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+
+## Error Responses
+
+Bad Request (400):
+{
+  "success": false,
+  "message": "Validation error",
+  "errors": [{
+    "field": "email",
+    "message": "Must be a valid email address"
+  }]
+}
+
+Unauthorized (401):
+{
+  "success": false,
+  "message": "Invalid token"
+}
+
+Not Found (404):
+{
+  "success": false,
+  "message": "Resource not found"
+}
+
+Server Error (500):
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Detailed error message"
+}
+
+## File Upload Specifications
+- Maximum file size: 5MB
+- Supported formats:
+  - Documents: PDF, DOC, DOCX
+  - Images: JPG, PNG
+- Maximum attachments per application: 5
+
+## Rate Limits
+- 100 requests per minute per IP
+- 1000 requests per hour per user
+
+## Status Codes
+- 200: Success
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 500: Server Error

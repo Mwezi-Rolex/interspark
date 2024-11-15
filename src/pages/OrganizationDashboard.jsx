@@ -7,9 +7,23 @@ import MessagesContent from '../components/OrgDashboard/MessagesContent';
 import SettingsContent from '../components/OrgDashboard/SettingsContent';
 import InternsContent from '../components/OrgDashboard/InternsContent';
 import JobsContent from '../components/OrgDashboard/JobsContent';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { logout } from '../services/authService';
 
 const OrganizationDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      logout();
+      toast.success('Logged out successfully');
+      navigate('/');
+    } catch (error) {
+      toast.error('Failed to logout');
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -54,7 +68,10 @@ const OrganizationDashboard = () => {
             <NavItem icon={<FaCog />} title="Settings" id="settings" activeTab={activeTab} setActiveTab={setActiveTab} />
           </nav>
           <div className="p-4 border-t border-gray-200">
-            <button className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+            >
               <FaSignOutAlt className="mr-2" />
               <span>Logout</span>
             </button>

@@ -1,39 +1,161 @@
-import React, { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaPlus, FaEdit, FaTrash, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from '../../config/axios';
+import { toast } from 'react-toastify';
+
+// Add DeleteConfirmationModal component
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, jobTitle, isDeleting }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="mt-3 text-center">
+          <div className="flex items-center justify-center text-red-500 mb-4">
+            <FaExclamationTriangle className="h-12 w-12" />
+          </div>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Delete Internship</h3>
+          <div className="mt-2 px-7 py-3">
+            <p className="text-sm text-gray-500">
+              Are you sure you want to delete "{jobTitle}"? This action cannot be undone.
+            </p>
+          </div>
+          <div className="flex justify-center gap-4 mt-4">
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className={`px-4 py-2 text-white text-sm font-medium rounded-md ${
+                isDeleting
+                  ? 'bg-red-400 cursor-not-allowed'
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
+            >
+              {isDeleting ? (
+                <span className="flex items-center">
+                  <FaSpinner className="animate-spin mr-2" />
+                  Deleting...
+                </span>
+              ) : (
+                'Delete'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const JobsContent = () => {
-  const [jobs, setJobs] = useState([
-    { id: 1, title: 'Frontend Developer Intern', department: 'Engineering', location: 'Nairobi', status: 'Active' },
-    { id: 2, title: 'UX Designer Intern', department: 'Design', location: 'Mombasa', status: 'Active' },
-    { id: 3, title: 'Data Analyst Intern', department: 'Analytics', location: 'Kisumu', status: 'Closed' },
-  ]);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    pages: 0,
+    page: 1,
+    limit: 10
+  });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    jobId: null,
+    jobTitle: '',
+    isDeleting: false
+  });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentJob, setCurrentJob] = useState(null);
+  // Fetch jobs from API
+  const fetchJobs = async (page = 1) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`/companies/internships?page=${page}&limit=${pagination.limit}&status=open`);
 
-  const handleAddJob = () => {
-    setCurrentJob(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditJob = (job) => {
-    setCurrentJob(job);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteJob = (jobId) => {
-    setJobs(jobs.filter(job => job.id !== jobId));
-  };
-
-  const handleSaveJob = (jobData) => {
-    if (currentJob) {
-      setJobs(jobs.map(job => job.id === currentJob.id ? { ...job, ...jobData } : job));
-    } else {
-      setJobs([...jobs, { id: jobs.length + 1, ...jobData }]);
+      if (response.data.success) {
+        setJobs(response.data.internships);
+        setPagination(response.data.pagination);
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Error fetching internships';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-    setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  // Update handleDeleteJob
+  const handleDeleteJob = async () => {
+    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
+    try {
+      await axios.delete(`/companies/internships/${deleteModal.jobId}`);
+      toast.success('Internship deleted successfully');
+      fetchJobs(pagination.page); // Refresh the list
+      setDeleteModal({ isOpen: false, jobId: null, jobTitle: '', isDeleting: false });
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Error deleting internship';
+      toast.error(errorMessage);
+      setDeleteModal(prev => ({ ...prev, isDeleting: false }));
+    }
+  };
+
+  // Add openDeleteModal function
+  const openDeleteModal = (job) => {
+    setDeleteModal({
+      isOpen: true,
+      jobId: job.id,
+      jobTitle: job.title,
+      isDeleting: false
+    });
+  };
+
+  // Add closeDeleteModal function
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      jobId: null,
+      jobTitle: '',
+      isDeleting: false
+    });
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.pages) {
+      fetchJobs(newPage);
+    }
+  };
+
+  if (loading && jobs.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <FaSpinner className="animate-spin text-4xl text-blue-500" />
+      </div>
+    );
+  }
+
+  if (error && jobs.length === 0) {
+    return (
+      <div className="text-center text-red-600 p-4">
+        <p>{error}</p>
+        <button
+          onClick={() => fetchJobs()}
+          className="mt-2 text-blue-500 hover:text-blue-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4">
@@ -47,161 +169,127 @@ const JobsContent = () => {
           Add New Job
         </Link>
       </div>
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {jobs.map((job) => (
-              <tr key={job.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{job.title}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{job.department}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{job.location}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    job.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {job.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    className="text-indigo-600 hover:text-indigo-900 mr-3"
-                    onClick={() => handleEditJob(job)}
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    className="text-red-600 hover:text-red-900"
-                    onClick={() => handleDeleteJob(job.id)}
-                  >
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {isModalOpen && (
-        <JobModal
-          job={currentJob}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSaveJob}
-        />
+
+      {jobs.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600">No internships posted yet.</p>
+          <Link
+            to="/company-dashboard/create-job"
+            className="text-blue-500 hover:text-blue-700 mt-2 inline-block"
+          >
+            Post your first internship
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Job Title
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Applications
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Deadline
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {jobs.map((job) => (
+                  <tr key={job.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{job.title}</div>
+                      <div className="text-sm text-gray-500">{job.category}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {job.applications?.length || 0} applications
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {new Date(job.applicationDeadline).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        new Date(job.applicationDeadline) > new Date()
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {new Date(job.applicationDeadline) > new Date() ? 'Active' : 'Closed'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Link
+                        to={`/company-dashboard/edit-job/${job.id}`}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      >
+                        <FaEdit className="inline w-5 h-5" />
+                      </Link>
+                      <button
+                        onClick={() => openDeleteModal(job)}
+                        className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                      >
+                        <FaTrash className="inline w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {pagination.pages > 1 && (
+            <div className="flex justify-center mt-4 space-x-2">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className={`px-3 py-1 rounded ${
+                  pagination.page === 1
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-700'
+                }`}
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1">
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.pages}
+                className={`px-3 py-1 rounded ${
+                  pagination.page === pagination.pages
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-700'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
-    </div>
-  );
-};
 
-const JobModal = ({ job, onClose, onSave }) => {
-  const [jobData, setJobData] = useState(job || { title: '', department: '', location: 'Nairobi', status: 'Active' });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setJobData({ ...jobData, [name]: value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(jobData);
-  };
-
-  const kenyanLocations = [
-    'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Malindi', 'Kitale', 'Machakos', 'Naivasha',
-    'Nyeri', 'Kakamega', 'Kisii', 'Garissa', 'Embu', 'Meru', 'Nanyuki', 'Bungoma', 'Kericho', 'Kilifi',
-    'Remote (Kenya)'
-  ];
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-96">
-        <h3 className="text-xl font-semibold mb-4">{job ? 'Edit Job' : 'Add New Job'}</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
-              Job Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={jobData.title}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="department">
-              Department
-            </label>
-            <input
-              type="text"
-              id="department"
-              name="department"
-              value={jobData.department}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
-              Location
-            </label>
-            <select
-              id="location"
-              name="location"
-              value={jobData.location}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-            >
-              {kenyanLocations.map((location) => (
-                <option key={location} value={location}>{location}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="status">
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={jobData.status}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option value="Active">Active</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Save
-            </button>
-          </div>
-        </form>
-      </div>
+      {/* Add DeleteConfirmationModal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteJob}
+        jobTitle={deleteModal.jobTitle}
+        isDeleting={deleteModal.isDeleting}
+      />
     </div>
   );
 };

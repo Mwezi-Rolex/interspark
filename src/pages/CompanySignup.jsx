@@ -1,31 +1,54 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaUser } from 'react-icons/fa';
+import { FaArrowLeft, FaBuilding, FaEnvelope, FaPhone, FaGlobe, FaUser, FaMapMarkerAlt } from 'react-icons/fa';
+import { companySignup } from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 const CompanySignup = () => {
+  const { setUser } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: '',
+    description: '',
     industry: '',
+    location: '',
     email: '',
-    phone: '',
     website: '',
-    contactPerson: '',
     password: '',
     confirmPassword: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log('Form submitted:', formData);
-    // Redirect to a success page or dashboard
-    navigate('/company-dashboard');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await companySignup(formData);
+      if (response.success) {
+        setUser(response.company);
+        navigate('/company-dashboard');
+      } else {
+        setError(response.message);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to create company account');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +66,12 @@ const CompanySignup = () => {
             <span className="font-medium">Back</span>
           </motion.button>
           <h1 className="text-3xl font-bold text-gray-900">Company Signup</h1>
+          <Link
+            to="/company-login"
+            className="text-blue-600 hover:text-blue-800 transition-colors duration-300"
+          >
+            Already have an account? Login
+          </Link>
         </div>
       </header>
 
@@ -53,6 +82,13 @@ const CompanySignup = () => {
           transition={{ duration: 0.5 }}
           className="bg-white shadow rounded-lg p-8"
         >
+          {error && (
+            <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-md">
+              {error.split(', ').map((err, index) => (
+                <div key={index}>{err}</div>
+              ))}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
@@ -76,6 +112,22 @@ const CompanySignup = () => {
             </div>
 
             <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                Company Description
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Brief description of your company"
+                value={formData.description}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div>
               <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
                 Industry
               </label>
@@ -94,6 +146,27 @@ const CompanySignup = () => {
                 <option value="education">Education</option>
                 <option value="other">Other</option>
               </select>
+            </div>
+
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                Location
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaMapMarkerAlt className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="location"
+                  id="location"
+                  className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                  placeholder="e.g., Nairobi"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
 
             <div>
@@ -212,9 +285,12 @@ const CompanySignup = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={loading}
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Sign Up
+                {loading ? 'Creating Account...' : 'Sign Up'}
               </button>
             </div>
           </form>
