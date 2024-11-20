@@ -65,7 +65,7 @@ const Home = () => {
 
     const jobs = [
       { id: 1, title: 'Software Engineer Intern', company: 'Safaricom', location: 'Nairobi', logo: '/images/safaricom-logo.png', time: '2 days ago', applicants: 15, vacancies: 30 },
-      { id: 2, title: 'Marketing Assistant', company: 'KCB Bank', location: 'Mombasa', logo: '/images/kcb-logo.png', time: '1 week ago', applicants: 20, vacancies: 25 },
+      { id: 2, title: 'Marketing Assistant', company: 'KCB', location: 'Mombasa', logo: '/images/kcb-logo.png', time: '1 week ago', applicants: 20, vacancies: 25 },
       { id: 3, title: 'Data Analyst Intern', company: 'Equity Bank', location: 'Kisumu', logo: '/images/equity-logo.png', time: '3 days ago', applicants: 10, vacancies: 20 },
     ];
 
