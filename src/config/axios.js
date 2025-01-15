@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://api-interspark.farmzenai.com/api';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
